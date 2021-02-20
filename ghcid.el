@@ -158,19 +158,19 @@ otherwise search for project root using
 (defun ghcid-test-command ()
   "Get the test command for ghcid.
 If the variable `ghcid-test-command' is non-nil, return that,
-otherwise return :main."
-  (or ghcid-test-command ":main"))
+otherwise return 'return ()'."
+  (or ghcid-test-command "return ()"))
 
 (defun ghcid-setup-command ()
   "Get the setup command for ghcid.
 If the variable `ghcid-setup-command' is non-nil, return that,
-otherwise return \"\"."
+otherwise return ':set myide ghcid'."
   (or ghcid-setup-command ":set myide ghcid"))
 
 (defun ghcid-lint-command ()
   "Get the lint command for ghcid.
 If the variable `ghcid-lint-command' is non-nil, return that,
-otherwise return hlint."
+otherwise return 'hlint'."
   (or ghcid-lint-command "hlint"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
