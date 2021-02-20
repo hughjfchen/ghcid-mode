@@ -23,8 +23,8 @@ This fork has solved the above two problems.
 
 Add following code to your ~DOOMDIR/packages.el~:
 
-(package! ghcid-mode
-  (:repo (:url "hughjfchen/ghcid-mode")))
+(package! ghcid
+  :recipe (:host github :repo "hughjfchen/ghcid-mode"))
   
 And add following to your ~DOOMDIR/config.el~:
 
