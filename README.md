@@ -34,4 +34,11 @@ And add following to your ~DOOMDIR/config.el~:
 ## Things need to improve
 
 Currently, this fork launches ~ghcid~ with ~--test="return ()"~, if you want to run your tests after your codes pass check,
-set the ~ghcid-test-command~ in a ~.dir-locals.el~ under an appropriate directory.
+set the ~ghcid-test-command~ in a ~.dir-locals.el~ under an appropriate directory. However, due to the limitation that `cabal`
+doesn't support loading multiple targets into one `ghci` session, you cannot run tests if your library source tree and your
+tests are two separate components within your `cabal` file, which, unfortunately, is most the case. For more information, refer
+to the following links:
+
+https://github.com/ndmitchell/ghcid/issues/320
+https://github.com/haskell/cabal/issues/3659
+
