@@ -109,6 +109,7 @@ will be in different GHCi sessions."
     ;(new-nix ghcid-cabal-new-nix ("nix-shell" "--pure" "--run" (concat "cabal v2-repl " (or ghcid-target (ghcid-package-name) "") " --builddir=dist/ghcid")))
     ;(nix ghcid-cabal-nix ("nix-shell" "--pure" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
     ;(impure-nix ghcid-cabal-nix ("nix-shell" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
+    (predefined-ghci ".ghci" ("ghci"))
     (new-build "cabal.project.local" ("cabal" "new-repl" (or ghcid-target (ghcid-package-name) nil)))
     ;(nix-ghci ,(lambda (d) (directory-files d t "shell.nix\\|default.nix")) ("nix-shell" "--pure" "--run" "ghci"))
     (stack "stack.yaml" ("stack" "repl" ghcid-target))
