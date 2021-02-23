@@ -251,16 +251,6 @@ recognize the new height until you manually restart it by calling
   (compilation-minor-mode))
 
 
-;; change the buffer to appear on right if none exists.
-(add-to-list
- 'display-buffer-alist
- '((ghcid-buffer-name)
-   (display-buffer-reuse-window   ;; First try to reuse an existing window
-    display-buffer-in-side-window) ;; Then try a new window at the right side
-   (side . right)                  ;; the side windows located at right side
-   (slot . 0)
-   ))
-
 ;; Compilation mode does some caching for markers in files, but it gets confused
 ;; because ghcid reloads the files in the same process. Here we parse the
 ;; 'Reloading...' message from ghcid and flush the cache for the mentioned
@@ -300,7 +290,12 @@ Return the window that show the buffer.
 
 User configuration will influence where the buffer gets shown
 exactly. See `ghcid-mode'."
-  (display-buffer (get-buffer-create (ghcid-buffer-name)) '((display-buffer-reuse-window display-buffer-in-side-window) (side . right) (slot . 0))))
+  (display-buffer (get-buffer-create (ghcid-buffer-name)) '((display-buffer-reuse-window                ;; first, try to reuse existing window
+                                                             display-buffer-in-side-window)             ;; otherwise, create in side window
+                                                            (side . right)                              ;; at right side
+                                                            (slot . 0)                                  ;; slot 0
+                                                            (window-width . fit-window-to-buffer)       ;; fit window width to buffer
+                                                            )))
 
 (defun ghcid-start (dir cmd)
   "Start ghcid in the specified directory DIR and CMD."
