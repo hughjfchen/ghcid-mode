@@ -300,7 +300,7 @@ Return the window that show the buffer.
 
 User configuration will influence where the buffer gets shown
 exactly. See `ghcid-mode'."
-  (display-buffer (get-buffer-create (ghcid-buffer-name)) '((display-buffer-reuse-window))))
+  (display-buffer (get-buffer-create (ghcid-buffer-name)) '((display-buffer-reuse-window display-buffer-in-side-window) (side . right) (slot . 0))))
 
 (defun ghcid-start (dir cmd)
   "Start ghcid in the specified directory DIR and CMD."
