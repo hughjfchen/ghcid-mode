@@ -256,7 +256,7 @@ recognize the new height until you manually restart it by calling
  'display-buffer-alist
  '((ghcid-buffer-name)
    (display-buffer-reuse-window   ;; First try to reuse an existing window
-    display-buffer-at-right ;; Then try a new window at the bottom
+    display-buffer-in-side-window (side . right) ;; Then try a new window at the right side
     display-buffer-pop-up-window))) ;; Otherwise show a pop-up
 
 ;; Compilation mode does some caching for markers in files, but it gets confused
