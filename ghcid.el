@@ -251,6 +251,14 @@ recognize the new height until you manually restart it by calling
   (compilation-minor-mode))
 
 
+;; change the buffer to appear on right if none exists.
+(add-to-list
+ 'display-buffer-alist
+ '((ghcid-buffer-name)
+   (display-buffer-reuse-window   ;; First try to reuse an existing window
+    display-buffer-at-right ;; Then try a new window at the bottom
+    display-buffer-pop-up-window))) ;; Otherwise show a pop-up
+
 ;; Compilation mode does some caching for markers in files, but it gets confused
 ;; because ghcid reloads the files in the same process. Here we parse the
 ;; 'Reloading...' message from ghcid and flush the cache for the mentioned
