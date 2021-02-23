@@ -280,10 +280,9 @@ recognize the new height until you manually restart it by calling
 
 ;; TODO Pass in compilation command like compilation-mode
 (defun ghcid-command (cmd h)
-  "Construct a ghcid command with the specified CMD and H.
-Currently, ignore the H, using no-height-limit instead."
-  (format "ghcid --command=%s --test=\"%s\" --setup=\"%s\" --lint=\"%s\" --no-height-limit --reverse-errors --clear --allow-eval\n"
-          cmd (ghcid-test-command) (ghcid-setup-command) (ghcid-lint-command)))
+  "Construct a ghcid command with the specified CMD and H."
+  (format "ghcid --command=%s --test=\"%s\" --setup=\"%s\" --lint=\"%s\" --height=%s --allow-eval\n"
+          cmd (ghcid-test-command) (ghcid-setup-command) (ghcid-lint-command) h))
 
 (defun ghcid-get-buffer ()
   "Create or reuse a ghcid buffer with the configured name and display it.
