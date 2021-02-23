@@ -256,8 +256,10 @@ recognize the new height until you manually restart it by calling
  'display-buffer-alist
  '((ghcid-buffer-name)
    (display-buffer-reuse-window   ;; First try to reuse an existing window
-    display-buffer-in-side-window (side . right) ;; Then try a new window at the right side
-    display-buffer-pop-up-window))) ;; Otherwise show a pop-up
+    display-buffer-in-side-window) ;; Then try a new window at the right side
+   (side . right)                  ;; the side windows located at right side
+   (slot . 0)
+   ))
 
 ;; Compilation mode does some caching for markers in files, but it gets confused
 ;; because ghcid reloads the files in the same process. Here we parse the
