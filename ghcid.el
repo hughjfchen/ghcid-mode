@@ -177,11 +177,7 @@ otherwise return 'hlint'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Session-local variables. These are set *IN THE GHCi INTERACTION BUFFER*
 
-(defvar-local ghcid-flymake-token 1000)
 (defvar-local ghcid-command-line nil "command line used to start GHCi")
-(defvar-local ghcid-load-message nil "load messages")
-(defvar-local ghcid-loaded-file "<GHCID:NO-FILE-LOADED>")
-(defvar-local ghcid-queue nil "List of ready GHCi queries.")
 (defvar-local ghcid-package-name nil "The package name associated with the current buffer.")
 (defvar-local ghcid-state nil
   "nil: initial state
@@ -315,6 +311,11 @@ exactly. See `ghcid-mode'."
       (setq-local term-buffer-maximum-size height)
       (setq-local scroll-up-aggressively 1)
       (setq-local show-trailing-whitespace nil)
+
+      ;; make the custom variables local copy
+      (make-local-variable ghcid-test-command)
+      (make-local-variable ghcid-setup-command)
+      (make-local-variable ghcid-lint-command)
 
       (term-exec (ghcid-buffer-name)
            "ghcid"
