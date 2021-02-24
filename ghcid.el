@@ -275,10 +275,10 @@ recognize the new height until you manually restart it by calling
 
 
 ;; TODO Pass in compilation command like compilation-mode
-(defun ghcid-command (cmd h)
-  "Construct a ghcid command with the specified CMD and H."
+(defun ghcid-command (cmd testcmd setupcmd lintcmd h)
+  "Construct a ghcid command with the specified CMD, TESTCMD, SETUPCMD, LINTCMD and H."
   (format "ghcid --command=%s --test=\"%s\" --setup=\"%s\" --lint=\"%s\" --height=%s --allow-eval\n"
-          cmd (ghcid-test-command) (ghcid-setup-command) (ghcid-lint-command) h))
+          cmd testcmd setupcmd lintcmd h))
 
 (defun ghcid-get-buffer ()
   "Create or reuse a ghcid buffer with the configured name and display it.
@@ -293,8 +293,8 @@ exactly. See `ghcid-mode'."
                                                             (window-width . fit-window-to-buffer)       ;; fit window width to buffer
                                                             )))
 
-(defun ghcid-start (dir cmd)
-  "Start ghcid in the specified directory DIR and CMD."
+(defun ghcid-start (dir cmd testcmd setupcmd lintcmd)
+  "Start ghcid in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
 
   (with-selected-window (ghcid-get-buffer)
 
@@ -316,7 +316,7 @@ exactly. See `ghcid-mode'."
            "ghcid"
            "/bin/bash"
            nil
-           (list "-c" (ghcid-command cmd height)))
+           (list "-c" (ghcid-command cmd testcmd setupcmd lintcmd height)))
 
       )))
 
@@ -338,8 +338,12 @@ The process will be started in the directory of your .cabal or stack.yaml
 project root."
   (interactive)
   (let* ((root (ghcid-project-root))
-         (replcmd (-non-nil (-map #'eval (ghcid-repl-command-line)))))
-    (ghcid-start root (combine-and-quote-strings replcmd))))
+         (replcmd (-non-nil (-map #'eval (ghcid-repl-command-line))))
+         (testcmd (ghcid-test-command))
+         (setupcmd (ghcid-setup-command))
+         (lintcmd (ghcid-lint-command))
+         )
+    (ghcid-start root (combine-and-quote-strings replcmd) testcmd setupcmd lintcmd)))
 
 ;; Assumes that only one window is open
 (defun ghcid-stop ()
