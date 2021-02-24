@@ -312,11 +312,6 @@ exactly. See `ghcid-mode'."
       (setq-local scroll-up-aggressively 1)
       (setq-local show-trailing-whitespace nil)
 
-      ;; make the custom variables local copy
-      (make-local-variable ghcid-test-command)
-      (make-local-variable ghcid-setup-command)
-      (make-local-variable ghcid-lint-command)
-
       (term-exec (ghcid-buffer-name)
            "ghcid"
            "/bin/bash"
