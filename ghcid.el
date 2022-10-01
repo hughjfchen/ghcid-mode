@@ -172,8 +172,8 @@ otherwise return ':set myide ghcid'."
 (defun ghcid-lint-command ()
   "Get the lint command for ghcid.
 If the variable `ghcid-lint-command' is non-nil, return that,
-otherwise return 'hlint'."
-  (or ghcid-lint-command "hlint"))
+otherwise return 'true'."
+  (or ghcid-lint-command "true"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Session-local variables. These are set *IN THE GHCi INTERACTION BUFFER*
