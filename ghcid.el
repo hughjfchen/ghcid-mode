@@ -1,4 +1,4 @@
-;;; ghcid.el --- Really basic ghcid+stack support in emacs with compilation-mode -*- lexical-binding: t -*-
+;;; ghcid.el --- Really basic ghcid mode support with compilation-mode
 
 ;; Author: Matthew Wraith <wraithm@gmail.com>
 ;;         Yorick Sijsling
@@ -10,7 +10,7 @@
 ;; Version: 1.0
 ;; Created: 26 Sep 2014
 ;; Keywords: tools, files, Haskell
-
+;; Package-Requires: ((emacs "25.1"))
 ;;; Commentary:
 
 ;; Use M-x ghcid to launch
@@ -18,6 +18,7 @@
 ;;; Code:
 
 (require 'haskell-mode)
+(require 'compile)
 (require 'term)
 (require 'dash)
 
@@ -25,7 +26,7 @@
 ;; Configuration
 
 (defgroup ghcid nil
-  "Ghcid development mode for Haskell"
+  "Ghcid development mode for Haskell."
   :group 'haskell)
 
 (defcustom ghcid-debug nil
@@ -109,7 +110,7 @@ will be in different GHCi sessions."
     ;(new-nix ghcid-cabal-new-nix ("nix-shell" "--pure" "--run" (concat "cabal v2-repl " (or ghcid-target (ghcid-package-name) "") " --builddir=dist/ghcid")))
     ;(nix ghcid-cabal-nix ("nix-shell" "--pure" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
     ;(impure-nix ghcid-cabal-nix ("nix-shell" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
-    (predefined-ghci ".ghci" ("ghci"))
+    (predefined-ghcid ".ghcid" (".ghcid"))
     (new-build "cabal.project.local" ("cabal" "new-repl" (or ghcid-target (ghcid-package-name) nil)))
     ;(nix-ghci ,(lambda (d) (directory-files d t "shell.nix\\|default.nix")) ("nix-shell" "--pure" "--run" "ghci"))
     (stack "stack.yaml" ("stack" "repl" ghcid-target))
@@ -177,16 +178,16 @@ otherwise return 'hlint'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Session-local variables. These are set *IN THE GHCi INTERACTION BUFFER*
 
-(defvar-local ghcid-command-line nil "command line used to start GHCi")
+(defvar-local ghcid-command-line nil "Command line used to start GHCi.")
 (defvar-local ghcid-package-name nil "The package name associated with the current buffer.")
 (defvar-local ghcid-state nil
-  "nil: initial state
+  "The state could has following setting:
+- nil: initial state
 - deleting: The process of the buffer is being deleted.
 - dead: GHCi died on its own. Do not try restarting
 automatically. The user will have to manually run `ghcid-restart'
 to destroy the buffer and create a fresh one without this variable enabled.
-- other value: informative value for the user about what GHCi is doing
-")
+- other value: informative value for the user about what GHCi is doing.")
 
 (defun ghcid-get-var (symbol)
   "Return the value of SYMBOL in the GHCi process buffer."
@@ -207,7 +208,8 @@ CABAL-FILE rather than trying to locate one."
                 "")))))
 
 (defun ghcid-cabal-find-file (&optional file)
-  "Search for directory of cabal file, upwards from FILE (or `default-directory' if nil)."
+  "Search for directory of cabal file.
+upwards from FILE (or `default-directory' if nil)."
   (let ((dir (locate-dominating-file (or file default-directory)
                                      (lambda (d) (directory-files d t ".\\.cabal\\'")))))
     (when dir (car (directory-files dir t ".\\.cabal\\'")))))
@@ -215,7 +217,7 @@ CABAL-FILE rather than trying to locate one."
 
 ;;; Original ghcid emacs plugin from the ghcid repostory.
 (define-minor-mode ghcid-mode
-  "A minor mode for ghcid terminals
+  "A minor mode for ghcid terminals.
 
 Use `ghcid' to start a ghcid session in a new buffer. The process
 will start in the directory of your project, i.e., the directory
@@ -239,8 +241,7 @@ To configure where the new buffer should appear, customize your
 
 If the window that shows ghcid changes size, the process will not
 recognize the new height until you manually restart it by calling
-`ghcid' again.
-"
+`ghcid' again."
   :lighter " Ghcid"
   (when (fboundp 'nlinum-mode) (nlinum-mode -1))
   (linum-mode -1)
@@ -260,8 +261,7 @@ recognize the new height until you manually restart it by calling
          (let* ((filenames (cdr (split-string (match-string 1) "\n  "))))
            (dolist (filename filenames)
              (compilation--flush-file-structure filename)))
-         nil))
-    ))
+         nil))))
 (add-to-list 'compilation-error-regexp-alist 'ghcid-reloading)
 
 
@@ -276,7 +276,8 @@ recognize the new height until you manually restart it by calling
 
 ;; TODO Pass in compilation command like compilation-mode
 (defun ghcid-command (cmd testcmd setupcmd lintcmd h)
-  "Construct a ghcid command with the specified CMD, TESTCMD, SETUPCMD, LINTCMD and H."
+  "Construct a ghcid command.
+with the specified CMD, TESTCMD, SETUPCMD, LINTCMD and H."
   (format "ghcid --command=%s --test=\"%s\" --setup=\"%s\" --lint=\"%s\" --height=%s --allow-eval\n"
           cmd testcmd setupcmd lintcmd h))
 
@@ -294,7 +295,8 @@ exactly. See `ghcid-mode'."
                                                             )))
 
 (defun ghcid-start (dir cmd testcmd setupcmd lintcmd)
-  "Start ghcid in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
+  "Start ghcid.
+in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
 
   (with-selected-window (ghcid-get-buffer)
 
@@ -316,9 +318,7 @@ exactly. See `ghcid-mode'."
            "ghcid"
            "/bin/bash"
            nil
-           (list "-c" (ghcid-command cmd testcmd setupcmd lintcmd height)))
-
-      )))
+           (list "-c" (ghcid-command cmd testcmd setupcmd lintcmd height))))))
 
 (defun ghcid-kill ()
   "Kill the ghcid buffer and process."
@@ -327,8 +327,7 @@ exactly. See `ghcid-mode'."
     (when (processp ghcid-proc)
       (progn
         (set-process-query-on-exit-flag ghcid-proc nil)
-        (kill-process ghcid-proc)
-        ))))
+        (kill-process ghcid-proc)))))
 
 ;; TODO Close stuff if it fails
 (defun ghcid ()
@@ -341,8 +340,7 @@ project root."
          (replcmd (-non-nil (-map #'eval (ghcid-repl-command-line))))
          (testcmd (ghcid-test-command))
          (setupcmd (ghcid-setup-command))
-         (lintcmd (ghcid-lint-command))
-         )
+         (lintcmd (ghcid-lint-command)))
     (ghcid-start root (combine-and-quote-strings replcmd) testcmd setupcmd lintcmd)))
 
 ;; Assumes that only one window is open
