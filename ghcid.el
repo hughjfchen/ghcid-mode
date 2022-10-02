@@ -308,7 +308,7 @@ in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
 
       (term-mode)
       (term-line-mode)  ;; Allows easy navigation through the buffer
-      (ghcid-mode)
+      ;;(ghcid-mode)
 
       (setq-local term-buffer-maximum-size height)
       (setq-local scroll-up-aggressively 1)
