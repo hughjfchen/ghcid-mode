@@ -21,6 +21,7 @@
 (require 'compile)
 (require 'term)
 (require 'dash)
+(require 'subr-x)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configuration
@@ -110,7 +111,7 @@ will be in different GHCi sessions."
     ;(new-nix ghcid-cabal-new-nix ("nix-shell" "--pure" "--run" (concat "cabal v2-repl " (or ghcid-target (ghcid-package-name) "") " --builddir=dist/ghcid")))
     ;(nix ghcid-cabal-nix ("nix-shell" "--pure" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
     ;(impure-nix ghcid-cabal-nix ("nix-shell" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
-    (predefined-ghcid ".ghcid" (".ghcid"))
+    (predefined-ghcid ".ghcid" (""))
     (new-build "cabal.project.local" ("cabal" "new-repl" (or ghcid-target (format "%s:exe:%s" (ghcid-package-name) (ghcid-package-name)) nil)))
     ;(nix-ghci ,(lambda (d) (directory-files d t "shell.nix\\|default.nix")) ("nix-shell" "--pure" "--run" "ghci"))
     (stack "stack.yaml" ("stack" "repl" ghcid-target))
@@ -161,19 +162,19 @@ otherwise search for project root using
   "Get the test command for ghcid.
 If the variable `ghcid-test-command' is non-nil, return that,
 otherwise return 'return ()'."
-  (or ghcid-test-command "return ()"))
+  (if ghcid-test-command (format "--test=\"%s\"" ghcid-test-command) ""))
 
 (defun ghcid-setup-command ()
   "Get the setup command for ghcid.
 If the variable `ghcid-setup-command' is non-nil, return that,
 otherwise return ':set myide ghcid'."
-  (or ghcid-setup-command ":set myide ghcid"))
+  (if ghcid-setup-command (format "--setup=\"%s\"" ghcid-setup-command) ""))
 
 (defun ghcid-lint-command ()
   "Get the lint command for ghcid.
 If the variable `ghcid-lint-command' is non-nil, return that,
 otherwise return 'true'."
-  (or ghcid-lint-command "true"))
+  (if ghcid-lint-command (format "--lint=\"%s\"" ghcid-lint-command) ""))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Session-local variables. These are set *IN THE GHCi INTERACTION BUFFER*
@@ -263,7 +264,7 @@ recognize the new height until you manually restart it by calling
 (defun ghcid-command (cmd testcmd setupcmd lintcmd h)
   "Construct a ghcid command.
 with the specified CMD, TESTCMD, SETUPCMD, LINTCMD and H."
-  (format "ghcid --command=%s --test=\"%s\" --setup=\"%s\" --lint=\"%s\" --height=%s --allow-eval\n"
+  (format "ghcid %s %s %s %s --height=%s\n"
           cmd testcmd setupcmd lintcmd h))
 
 (defun ghcid-get-buffer ()
@@ -345,10 +346,12 @@ project root."
   (interactive)
   (let* ((root (ghcid-project-root))
          (replcmd (-non-nil (-map #'eval (ghcid-repl-command-line))))
+         (combinedReplcmd (combine-and-quote-strings replcmd))
+         (ghcidcmd (if (string-blank-p combinedReplcmd) "" (format "--command=%s" combinedReplcmd)))
          (testcmd (ghcid-test-command))
          (setupcmd (ghcid-setup-command))
          (lintcmd (ghcid-lint-command)))
-    (ghcid-start root (combine-and-quote-strings replcmd) testcmd setupcmd lintcmd)))
+    (ghcid-start root ghcidcmd testcmd setupcmd lintcmd)))
 
 ;; Assumes that only one window is open
 (defun ghcid-stop ()
