@@ -289,7 +289,9 @@ in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
 
   (with-selected-window (ghcid-get-buffer-display)
 
-    (setq next-error-last-buffer (current-buffer))
+    ;; Do we really want this? The HLS can provide a list of errors.
+    ;; So far, I just comment out this.
+    ;; (setq next-error-last-buffer (current-buffer))
     (setq-local default-directory dir)
 
     ;; Only now we can figure out the height to pass along to the ghcid process
