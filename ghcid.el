@@ -249,7 +249,7 @@ recognize the new height until you manually restart it by calling
 (defun ghcid-activate-mode ()
   "Really activate the ghcid mode."
   (when (fboundp 'nlinum-mode) (nlinum-mode -1))
-  (linum-mode -1)
+  ;;(linum-mode -1)
   (compilation-minor-mode))
 
 (defun ghcid-buffer-name ()
