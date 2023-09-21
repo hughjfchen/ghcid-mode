@@ -217,6 +217,7 @@ upwards from FILE (or `default-directory' if nil)."
 
 
 ;;; Original ghcid emacs plugin from the ghcid repostory.
+;;;###autoload
 (define-minor-mode ghcid-mode
   "A minor mode for ghcid terminals.
 
@@ -338,6 +339,7 @@ in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
         (kill-process ghcid-proc)))))
 
 ;; TODO Close stuff if it fails
+;;;###autoload
 (defun ghcid ()
   "Start a ghcid process in a new window. Kill any existing sessions.
 
@@ -354,6 +356,7 @@ project root."
     (ghcid-start root ghcidcmd testcmd setupcmd lintcmd)))
 
 ;; Assumes that only one window is open
+;;;###autoload
 (defun ghcid-stop ()
   "Stop ghcid."
   (interactive)
