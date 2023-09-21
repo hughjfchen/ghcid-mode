@@ -92,12 +92,12 @@ will be in different GHCi sessions."
 
 (defun ghcid-cabal-new-nix (d)
   "Non-nil if D contain a nix file and a cabal file."
-  (and (directory-files d t "shell.nix\\|default.nix")
+  (and (directory-files d t "shell.nix\\|default.nix\\|flake.nix")
        (directory-files d t "cabal.project.local")))
 
 (defun ghcid-cabal-nix (d)
   "Non-nil if D contain a nix file and a cabal file."
-  (and (directory-files d t "shell.nix\\|default.nix")
+  (and (directory-files d t "shell.nix\\|default.nix\\|flake.nix")
        (directory-files d t ".cabal$")))
 
 (defcustom ghcid-methods-alist
