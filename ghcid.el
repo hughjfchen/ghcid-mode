@@ -361,6 +361,6 @@ project root."
   (kill-buffer (ghcid-buffer-name)))
 
 
-(provide 'ghcid)
+(provide 'ghcid-mode)
 
 ;;; ghcid.el ends here
