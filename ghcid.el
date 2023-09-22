@@ -250,6 +250,7 @@ recognize the new height until you manually restart it by calling
   "Really activate the ghcid mode."
   (when (fboundp 'nlinum-mode) (nlinum-mode -1))
   (display-line-numbers-mode -1)
+  (read-only-mode 1)
   (compilation-minor-mode))
 
 (defun ghcid-buffer-name ()
