@@ -30,11 +30,6 @@
   "Ghcid development mode for Haskell."
   :group 'haskell)
 
-(defcustom ghcid-debug nil
-  "Show debug output."
-  :group 'ghcid :safe t
-  :type '(set (const inputs) (const outputs) (const responses) (const command-line)))
-
 (defcustom ghcid-repl-command-line nil
   "Command line to start GHCi, as a list: the executable and its arguments.
 When nil, ghcid will guess the value depending on
@@ -44,6 +39,8 @@ sexp which is evaluated to a string before being passed to the
 shell."
   :group 'ghcid
   :type '(repeat sexp))
+
+(put 'ghcid-repl-command-line 'safe-local-variable #'listp)
 
 (defcustom ghcid-project-root nil
   "The project root, as a string or nil.
@@ -63,32 +60,32 @@ will be in different GHCi sessions."
 
 (put 'ghcid-target 'safe-local-variable #'stringp)
 
-(defcustom ghcid-test-command nil
+(defcustom ghcid-test-command-line nil
   "The demand to use as the test command parameter for ghcid.
 Customize as a file or directory variable.  Different targets
 will be in different GHCi sessions."
   :group 'ghcid :safe t
   :type '(choice (const nil) string))
 
-(put 'ghcid-test-command 'safe-local-variable #'stringp)
+(put 'ghcid-test-command-line 'safe-local-variable #'stringp)
 
-(defcustom ghcid-setup-command nil
+(defcustom ghcid-setup-command-line nil
   "The demand to use as the setup command parameter for ghcid.
 Customize as a file or directory variable.  Different targets
 will be in different GHCi sessions."
   :group 'ghcid :safe t
   :type '(choice (const nil) string))
 
-(put 'ghcid-setup-command 'safe-local-variable #'stringp)
+(put 'ghcid-setup-command-line 'safe-local-variable #'stringp)
 
-(defcustom ghcid-lint-command nil
+(defcustom ghcid-lint-command-line nil
   "The demand to use as the lint command parameter for ghcid.
 Customize as a file or directory variable.  Different targets
 will be in different GHCi sessions."
   :group 'ghcid :safe t
   :type '(choice (const nil) string))
 
-(put 'ghcid-lint-command 'safe-local-variable #'stringp)
+(put 'ghcid-lint-command-line 'safe-local-variable #'stringp)
 
 (defun ghcid-cabal-new-nix (d)
   "Non-nil if D contain a nix file and a cabal file."
@@ -112,7 +109,7 @@ will be in different GHCi sessions."
     ;(nix ghcid-cabal-nix ("nix-shell" "--pure" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
     ;(impure-nix ghcid-cabal-nix ("nix-shell" "--run" (concat "cabal v1-repl " (or ghcid-target "") " --builddir=dist/ghcid")))
     (predefined-ghcid ".ghcid" (""))
-    (new-build "cabal.project.local" ("cabal" "new-repl" (or ghcid-target (format "%s:exe:%s" (ghcid-package-name) (ghcid-package-name)) nil)))
+    (new-build "cabal.project.local" ("cabal" "new-repl" (or ghcid-target (format "%s:lib:%s" (ghcid-package-name) (ghcid-package-name)) nil)))
     ;(nix-ghci ,(lambda (d) (directory-files d t "shell.nix\\|default.nix")) ("nix-shell" "--pure" "--run" "ghci"))
     (stack "stack.yaml" ("stack" "repl" ghcid-target))
     ;(mafia "mafia" ("mafia" "repl" ghcid-target))
@@ -158,23 +155,23 @@ otherwise search for project root using
   (or ghcid-project-root
       (progn (ghcid-initialize-method) ghcid-project-root)))
 
-(defun ghcid-test-command ()
+(defun ghcid-test-command-line ()
   "Get the test command for ghcid.
-If the variable `ghcid-test-command' is non-nil, return that,
-otherwise return 'return ()'."
-  (if ghcid-test-command (format "--test=\"%s\"" ghcid-test-command) ""))
+If the variable `ghcid-test-command-line' is non-nil, return that,
+otherwise return \\='return ()'."
+  (if ghcid-test-command-line (format "--test=\"%s\"" ghcid-test-command-line) ""))
 
-(defun ghcid-setup-command ()
+(defun ghcid-setup-command-line ()
   "Get the setup command for ghcid.
-If the variable `ghcid-setup-command' is non-nil, return that,
-otherwise return ':set myide ghcid'."
-  (if ghcid-setup-command (format "--setup=\"%s\"" ghcid-setup-command) ""))
+If the variable `ghcid-setup-command-line' is non-nil, return that,
+otherwise return \\=':set myide ghcid'."
+  (if ghcid-setup-command-line (format "--setup=\"%s\"" ghcid-setup-command-line) ""))
 
-(defun ghcid-lint-command ()
+(defun ghcid-lint-command-line ()
   "Get the lint command for ghcid.
-If the variable `ghcid-lint-command' is non-nil, return that,
-otherwise return 'true'."
-  (if ghcid-lint-command (format "--lint=\"%s\"" ghcid-lint-command) ""))
+If the variable `ghcid-lint-command-line' is non-nil, return that,
+otherwise return \\='true'."
+  (if ghcid-lint-command-line (format "--lint=\"%s\"" ghcid-lint-command-line) ""))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Session-local variables. These are set *IN THE GHCi INTERACTION BUFFER*
@@ -244,12 +241,22 @@ To configure where the new buffer should appear, customize your
 If the window that shows ghcid changes size, the process will not
 recognize the new height until you manually restart it by calling
 `ghcid' again."
-  :lighter " Ghcid")
+  :lighter " Ghcid"
+  :keymap
+  (list (cons (kbd "C-c g h c i d s") #'ghcid)
+        (cons (kbd "C-c g h c i d k") #'ghcid-stop))
+  (if ghcid-mode
+       (add-hook 'hack-local-variables-hook #'my-local-variables-hook)
+       (remove-hook 'hack-local-variables-hook #'my-local-variables-hook)))
+
+;;; local-variables hook hack
+(defun my-local-variables-hook ()
+    (when (derived-mode-p 'haskell-mode) (ghcid)))
 
 (defun ghcid-activate-mode ()
   "Really activate the ghcid mode."
   (when (fboundp 'nlinum-mode) (nlinum-mode -1))
-  (display-line-numbers-mode -1)
+  (when (fboundp 'display-line-numbers-mode) (display-line-numbers-mode -1))
   (read-only-mode 1)
   (compilation-minor-mode))
 
@@ -351,9 +358,9 @@ project root."
          (replcmd (-non-nil (-map #'eval (ghcid-repl-command-line))))
          (combinedReplcmd (combine-and-quote-strings replcmd))
          (ghcidcmd (if (string-blank-p combinedReplcmd) "" (format "--command=%s" combinedReplcmd)))
-         (testcmd (ghcid-test-command))
-         (setupcmd (ghcid-setup-command))
-         (lintcmd (ghcid-lint-command)))
+         (testcmd (ghcid-test-command-line))
+         (setupcmd (ghcid-setup-command-line))
+         (lintcmd (ghcid-lint-command-line)))
     (ghcid-start root ghcidcmd testcmd setupcmd lintcmd)))
 
 ;; Assumes that only one window is open
