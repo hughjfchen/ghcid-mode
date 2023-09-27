@@ -10,7 +10,7 @@
 ;; Version: 1.0
 ;; Created: 26 Sep 2014
 ;; Keywords: tools, files, Haskell
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "29.1"))
 ;;; Commentary:
 
 ;; Use M-x ghcid to launch
