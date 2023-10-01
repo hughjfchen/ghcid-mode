@@ -1,0 +1,68 @@
+#+Title: ghcid-mode Readme
+#+Author: Hugh JF Chen
+
+This is a ghcid minor mode support for emacs. It uses a terminal with compilation-mode.
+
+* Features
+
+This minor mode will provide following features when activated:
+- start ghcid automatically once activated
+- detect the project root directory based on open buffer file
+- check project build tools and construct the ghcid command accordingly
+- jump to error position
+- customize the ghcid repl command, test command, setup command or lint command
+
+* installation
+
+** doom emacs
+With doom emacs, add following to ~packages.el~:
+#+begin_src
+(package! ghcid
+  :recipe (:host github :repo "hughjfchen/ghcid-mode"))
+#+end_src
+and following to the ~config.el~:
+#+begin_src
+(use-package! ghcid
+  :config (load! ghcid))
+#+end_src
+
+** use-package
+For vallina emacs, recommand use ~use-package~:
+install it:
+#+begin_src
+(straight-use-package '(ghcid-mode :host github :repo "hughjfchen/ghcid-mode"
+                                :files (:defaults "*.el")))
+#+end_src
+
+and then config to activate it when haskell-mode is active:
+#+begin_src
+(use-package haskell-mode
+    :init
+     (add-hook 'haskell-mode-hook #'ghcid-mode))
+#+end_src
+
+* Configuration
+
+If ghcid-mode not able to start ghcid with correct command, you can config it using a ~.dir-locals.el~ file as so:
+#+begin_src
+((haskell-mode . ((ghcid-repl-command-line . ("cabal" "new-repl" "hsprjup:lib:hsprjup" "\\-f" "ghcidlibwithtest"))
+         (ghcid-test-command-line . "TestMain.main")
+         (ghcid-setup-command-line . ":load test/Spec.hs"))))
+#+end_src
+
+Following table lists the customization variables:
+|--------------------------+--------------------+--------------------------------------------------------+----------------------------------------------------------------------|
+| name                     | type               | meaning                                                | remarks                                                              |
+|--------------------------+--------------------+--------------------------------------------------------+----------------------------------------------------------------------|
+| ghcid-project-root       | string             | the project root directory                             | usually no need to set it, ghcid-mode should detect it automatically |
+| ghcid-target             | string             | the ghci repl target, could be a lib, an exe or a test | For multi target you could set                                       |
+| ghcid-repl-command-line  | a list with string | the ghcid command line to start the ghci               | the whole command to start the ghci                                  |
+| ghcid-test-command-line  | string             | the ghcid test command                                 |                                                                      |
+| ghcid-setup-command-line | string             | the ghcid setup command                                |                                                                      |
+| ghcid-lint-command-line  | string             | the ghcid lint command                                 |                                                                      |
+|--------------------------+--------------------+--------------------------------------------------------+----------------------------------------------------------------------|
+
+* Jump to error
+
+This mode uses ~compilation-mode~ within a terminal, so if there're some build errors, you can use the ~flycheck~
+keys(usually ~]+q~ and ~[+q~) to jump to the errors.
