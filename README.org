@@ -66,3 +66,13 @@ Following table lists the customization variables:
 
 This mode uses ~compilation-mode~ within a terminal, so if there're some build errors, you can use the ~flycheck~
 keys(usually ~]+q~ and ~[+q~) to jump to the errors.
+
+* Credits
+
+This minor mode is based on the work of the original ~ghcid~ plugin for emacs and inspired by the excellent [[https://github.com/jyp/dante][dante]] project.
+So Credits go to Following people:
+- Matthew Wraith <wraithm@gmail.com>
+- Yorick Sijsling
+- Vasiliy Yorkin <vasiliy.yorkin@gmail.com>
+- Neil Mitchell <ndmitchell@gmail.com>
+- Jean-Philippe Bernardy
