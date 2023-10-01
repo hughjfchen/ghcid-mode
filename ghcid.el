@@ -10,7 +10,7 @@
 ;; Version: 1.0
 ;; Created: 26 Sep 2014
 ;; Keywords: tools, files, Haskell
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "28.1"))
 ;;; Commentary:
 
 ;; Use M-x ghcid to launch
@@ -256,6 +256,7 @@ recognize the new height until you manually restart it by calling
 (defun ghcid-activate-mode ()
   "Really activate the ghcid mode."
   (when (fboundp 'nlinum-mode) (nlinum-mode -1))
+  (when (fboundp 'linum-mode) (linum-mode -1))
   (when (fboundp 'display-line-numbers-mode) (display-line-numbers-mode -1))
   (read-only-mode 1)
   (compilation-minor-mode))
