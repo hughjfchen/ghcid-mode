@@ -247,11 +247,18 @@ recognize the new height until you manually restart it by calling
         (cons (kbd "C-c g h c i d k") #'ghcid-stop))
   (if ghcid-mode
        (add-hook 'hack-local-variables-hook #'my-local-variables-hook)
-       (remove-hook 'hack-local-variables-hook #'my-local-variables-hook)))
+       (remove-hook 'hack-local-variables-hook #'my-local-variables-hook))
+  (if ghcid-mode
+       (add-hook 'window-state-change-functions #'my-switch-window-hook)
+       (remove-hook 'window-state-change-functions #'my-switch-window-hook)))
 
 ;;; local-variables hook hack
 (defun my-local-variables-hook ()
     (when (derived-mode-p 'haskell-mode) (ghcid)))
+
+;;; switch-window hook hack
+(defun my-switch-window-hook (c)
+    (when ghcid-mode (ghcid)))
 
 (defun ghcid-activate-mode ()
   "Really activate the ghcid mode."
@@ -271,11 +278,11 @@ recognize the new height until you manually restart it by calling
 
 
 ;; TODO Pass in compilation command like compilation-mode
-(defun ghcid-command (cmd testcmd setupcmd lintcmd h)
+(defun ghcid-command (cmd testcmd setupcmd lintcmd h w)
   "Construct a ghcid command.
-with the specified CMD, TESTCMD, SETUPCMD, LINTCMD and H."
-  (format "ghcid %s %s %s %s --height=%s\n"
-          cmd testcmd setupcmd lintcmd h))
+with the specified CMD, TESTCMD, SETUPCMD, LINTCMD, H and W."
+  (format "ghcid %s %s %s %s --height=%s --width=%s\n"
+          cmd testcmd setupcmd lintcmd h w))
 
 (defun ghcid-get-buffer ()
   "Create or reuse a ghcid buffer with the configured name."
@@ -306,37 +313,40 @@ in the specified directory DIR and CMD, TESTCMD, SETUPCMD and LINTCMD."
     (setq-local default-directory dir)
 
     ;; Only now we can figure out the height to pass along to the ghcid process
-    (let ((height (- (window-body-size) 1)))
+    (let* ((height (- (window-body-height) 1))
+           (width (- (window-body-width) 1))
+           (fullCmd (ghcid-command cmd testcmd setupcmd lintcmd height width)))
+        (unless (equal fullCmd (ghcid-get-var 'ghcid-command-line))
+            (term-mode)
+            (term-line-mode)  ;; Allows easy navigation through the buffer
+            (ghcid-activate-mode) ;; This will active the compilation-mode
 
-      (term-mode)
-      (term-line-mode)  ;; Allows easy navigation through the buffer
-      (ghcid-activate-mode) ;; This will active the compilation-mode
+            ;; Compilation mode does some caching for markers in files, but it gets confused
+            ;; because ghcid reloads the files in the same process. Here we parse the
+            ;; 'Reloading...' message from ghcid and flush the cache for the mentioned
+            ;; files. This approach is very similar to the 'omake' hacks included in
+            ;; compilation mode.
+            (add-to-list
+             'compilation-error-regexp-alist-alist
+             '(ghcid-reloading
+               "Reloading\\.\\.\\.\\(\\(\n  .+\\)*\\)" 1 nil nil nil nil
+               (0 (progn
+                      (let* ((filenames (cdr (split-string (match-string 1) "\n  "))))
+                          (dolist (filename filenames)
+                              (compilation--flush-file-structure filename)))
+                      nil))))
+            (add-to-list 'compilation-error-regexp-alist 'ghcid-reloading)
 
-      ;; Compilation mode does some caching for markers in files, but it gets confused
-      ;; because ghcid reloads the files in the same process. Here we parse the
-      ;; 'Reloading...' message from ghcid and flush the cache for the mentioned
-      ;; files. This approach is very similar to the 'omake' hacks included in
-      ;; compilation mode.
-      (add-to-list
-       'compilation-error-regexp-alist-alist
-       '(ghcid-reloading
-         "Reloading\\.\\.\\.\\(\\(\n  .+\\)*\\)" 1 nil nil nil nil
-         (0 (progn
-              (let* ((filenames (cdr (split-string (match-string 1) "\n  "))))
-                (dolist (filename filenames)
-                  (compilation--flush-file-structure filename)))
-              nil))))
-      (add-to-list 'compilation-error-regexp-alist 'ghcid-reloading)
+            (setq-local term-buffer-maximum-size height)
+            (setq-local scroll-up-aggressively 1)
+            (setq-local show-trailing-whitespace nil)
+            (setq-local ghcid-command-line fullCmd)
 
-      (setq-local term-buffer-maximum-size height)
-      (setq-local scroll-up-aggressively 1)
-      (setq-local show-trailing-whitespace nil)
-
-      (term-exec (ghcid-buffer-name)
-           "ghcid"
-           "/bin/bash"
-           nil
-           (list "-c" (ghcid-command cmd testcmd setupcmd lintcmd height))))))
+            (term-exec (ghcid-buffer-name)
+                       "ghcid"
+                       "/bin/bash"
+                       nil
+                       (list "-c" fullCmd))))))
 
 (defun ghcid-kill ()
   "Kill the ghcid buffer and process."
